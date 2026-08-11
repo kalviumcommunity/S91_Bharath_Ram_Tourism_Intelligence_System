@@ -1,16 +1,34 @@
 const mongoose = require("mongoose");
 
 const visitorSchema = new mongoose.Schema({
-  name: String,
-  age: Number,
-  country: String,
-  travelType: String,
-  budget: Number,
-  visitDate: Date,
+  name: {
+    type: String,
+    required: true,
+  },
 
-  destination: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Destination",
+  age: {
+    type: Number,
+    required: true,
+  },
+
+  country: {
+    type: String,
+    required: true,
+  },
+
+  travelType: {
+    type: String,
+    required: true,
+  },
+
+  budget: {
+    type: Number,
+    required: true,
+  },
+
+  visitDate: {
+    type: Date,
+    default: Date.now,
   },
 });
 
