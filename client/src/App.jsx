@@ -6,6 +6,9 @@ import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
 import Visitors from "./pages/Visitors";
 import Destinations from "./pages/Destinations";
+import VisitorForm from "./components/VisitorForm";
+import DestinationForm from "./components/DestinationForm";
+
 
 function App() {
   return (
@@ -31,8 +34,12 @@ function App() {
           </Routes>
         </div>
       </div>
+            <VisitorForm />
+      <DestinationForm />
+
     </BrowserRouter>
   );
 }
 
 export default App;
+
