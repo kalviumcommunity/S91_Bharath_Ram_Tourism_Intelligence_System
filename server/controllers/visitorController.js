@@ -5,7 +5,10 @@ const createVisitor = async (req, res) => {
   try {
     const visitor = await Visitor.create(req.body);
 
-    res.status(201).json(visitor);
+    res.status(201).json({
+      message: "Visitor created successfully",
+      visitor,
+    });
   } catch (error) {
     res.status(500).json({
       message: "Failed to create visitor",

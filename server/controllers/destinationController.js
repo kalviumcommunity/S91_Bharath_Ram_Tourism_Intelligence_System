@@ -33,9 +33,23 @@ const getDestinationById = async (req, res) => {
     });
   }
 };
+const createDestination = async (req, res) => {
+  try {
+    const destination = await Destination.create(req.body);
 
+    res.status(201).json({
+      message: "Destination created successfully",
+      destination,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to create destination",
+      error: error.message,
+    });
+  }
+};
 module.exports = {
   getDestinations,
   getDestinationById,
-  
+  createDestination,
 };
