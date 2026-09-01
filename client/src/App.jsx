@@ -8,6 +8,7 @@ import Visitors from "./pages/Visitors";
 import Destinations from "./pages/Destinations";
 import VisitorForm from "./components/VisitorForm";
 import DestinationForm from "./components/DestinationForm";
+import DestinationList from "./components/DestinationList";
 
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
       </div>
             <VisitorForm />
       <DestinationForm />
+      <DestinationList />
 
     </BrowserRouter>
   );
