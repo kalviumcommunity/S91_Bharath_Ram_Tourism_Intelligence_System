@@ -20,24 +20,26 @@ const createVisitor = async (req, res) => {
 // GET all visitors
 const getVisitors = async (req, res) => {
   try {
-    const visitors = await Visitor.find();
+    const visitors = await Visitor.find()
+      .populate("destination");
 
     res.status(200).json(visitors);
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch visitors",
-      error: error.message,
+      error: error.message
     });
   }
 };
 
 const getVisitorById = async (req, res) => {
   try {
-    const visitor = await Visitor.findById(req.params.id);
+    const visitor = await Visitor.findById(req.params.id)
+      .populate("destination");
 
     if (!visitor) {
       return res.status(404).json({
-        message: "Visitor not found",
+        message: "Visitor not found"
       });
     }
 
@@ -45,7 +47,7 @@ const getVisitorById = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch visitor",
-      error: error.message,
+      error: error.message
     });
   }
 };
