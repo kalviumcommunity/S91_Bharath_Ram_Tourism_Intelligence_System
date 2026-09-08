@@ -121,6 +121,7 @@ require("dotenv").config();
 
 const visitorRoutes = require("./routes/visitorRoutes");
 const destinationRoutes = require("./routes/destinationRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
@@ -144,6 +145,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/visitors", visitorRoutes);
 app.use("/api/destinations", destinationRoutes);
+app.use("/api/auth", authRoutes);
 
 const PORT = process.env.PORT || 5000;
 
