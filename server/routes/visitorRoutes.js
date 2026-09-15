@@ -4,11 +4,15 @@ const router = express.Router();
 const {
   createVisitor,
   getVisitors,
-  getVisitorById,
+  getVisitorById
 } = require("../controllers/visitorController");
 
-router.post("/", createVisitor);
-router.get("/", getVisitors);
-router.get("/:id", getVisitorById);
+const protect = require("../middleware/authMiddleware");
+
+router.post("/", protect, createVisitor);
+
+router.get("/", protect, getVisitors);
+
+router.get("/:id", protect, getVisitorById);
 
 module.exports = router;
