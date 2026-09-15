@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function VisitorForm() {
   const [formData, setFormData] = useState({
@@ -7,9 +7,32 @@ function VisitorForm() {
     country: "",
     travelType: "",
     budget: "",
+    destination: "",
   });
 
+  const [destinations, setDestinations] = useState([]);
   const [message, setMessage] = useState("");
+
+  // Get destinations from backend
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/destinations"
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setDestinations(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch destinations", error);
+      }
+    };
+
+    fetchDestinations();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -22,19 +45,36 @@ function VisitorForm() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/api/visitors", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          age: Number(formData.age),
-          budget: Number(formData.budget),
-        }),
-      });
+      // Get JWT token
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setMessage("Please login first");
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:5000/api/visitors",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            age: Number(formData.age),
+            country: formData.country,
+            travelType: formData.travelType,
+            budget: Number(formData.budget),
+            destination: formData.destination,
+          }),
+        }
+      );
 
       const data = await response.json();
+
+      console.log("Server response:", data);
 
       if (response.ok) {
         setMessage("Visitor added successfully!");
@@ -45,11 +85,13 @@ function VisitorForm() {
           country: "",
           travelType: "",
           budget: "",
+          destination: "",
         });
       } else {
-        setMessage(data.message || "Failed to add visitor");
+        setMessage(data.message || "Failed to create visitor");
       }
     } catch (error) {
+      console.error(error);
       setMessage("Unable to connect to the server");
     }
   };
@@ -104,7 +146,30 @@ function VisitorForm() {
           required
         />
 
-        <button type="submit">Add Visitor</button>
+        <select
+          name="destination"
+          value={formData.destination}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select Destination</option>
+
+          {destinations.map((destination) => (
+            <option
+              key={destination._id}
+              value={destination._id}
+            >
+              {destination.name}
+            </option>
+          ))}
+        </select>
+
+        <br />
+        <br />
+
+        <button type="submit">
+          Add Visitor
+        </button>
       </form>
 
       {message && <p>{message}</p>}

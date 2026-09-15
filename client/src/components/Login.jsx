@@ -25,9 +25,20 @@ function Login() {
 
       const data = await response.json();
 
-      setMessage(data.message);
+      if (response.ok) {
+        // Store JWT token in browser
+        localStorage.setItem("token", data.token);
+
+        // Store username as well
+        localStorage.setItem("username", data.user.username);
+
+        setMessage("Login successful!");
+      } else {
+        setMessage(data.message);
+      }
+
     } catch (error) {
-      setMessage("Login failed");
+      setMessage("Login failed. Please try again.");
     }
   };
 
@@ -36,23 +47,33 @@ function Login() {
       <h2>Login</h2>
 
       <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <div>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
+
+        <br />
+
+        <div>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+
+        <br />
 
         <button type="submit">
           Login
         </button>
+
       </form>
 
       <p>{message}</p>
