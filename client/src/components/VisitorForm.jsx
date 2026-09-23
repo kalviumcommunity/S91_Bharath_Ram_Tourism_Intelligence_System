@@ -1,178 +1,215 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
+import { TRAVEL_TYPES } from "../constants";
 
-function VisitorForm() {
-  const [formData, setFormData] = useState({
-    name: "",
-    age: "",
-    country: "",
-    travelType: "",
-    budget: "",
-    destination: "",
-  });
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+const EMPTY_FORM = {
+  name: "",
+  age: "",
+  country: "",
+  travelType: "",
+  budget: "",
+  destination: "",
+};
+
+function VisitorForm({ onCreated }) {
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [destinations, setDestinations] = useState([]);
-  const [message, setMessage] = useState("");
+  const [destStatus, setDestStatus] = useState("loading"); // loading | ready | error
+  const [message, setMessage] = useState({ text: "", error: false });
+  const [loading, setLoading] = useState(false);
+  const { token, logout } = useAuth();
+  const navigate = useNavigate();
 
-  // Get destinations from backend
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchDestinations = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:5000/api/destinations"
-        );
+        const response = await fetch(`${API_URL}/api/destinations`, {
+          signal: controller.signal,
+        });
+        const data = await response.json().catch(() => null);
 
-        const data = await response.json();
-
-        if (response.ok) {
+        if (response.ok && Array.isArray(data)) {
           setDestinations(data);
+          setDestStatus("ready");
+        } else {
+          setDestStatus("error");
         }
       } catch (error) {
-        console.error("Failed to fetch destinations", error);
+        if (error.name !== "AbortError") setDestStatus("error");
       }
     };
 
     fetchDestinations();
+    return () => controller.abort();
   }, []);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage({ text: "", error: false });
+
+    if (!token) {
+      setMessage({ text: "Please log in first.", error: true });
+      return;
+    }
+
+    setLoading(true);
 
     try {
-      // Get JWT token
-      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/api/visitors`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...formData,
+          age: Number(formData.age),
+          budget: Number(formData.budget),
+        }),
+      });
 
-      if (!token) {
-        setMessage("Please login first");
+      const data = await response.json().catch(() => ({}));
+
+      if (response.status === 401) {
+        logout();
+        navigate("/login");
         return;
       }
 
-      const response = await fetch(
-        "http://localhost:5000/api/visitors",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            age: Number(formData.age),
-            country: formData.country,
-            travelType: formData.travelType,
-            budget: Number(formData.budget),
-            destination: formData.destination,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      console.log("Server response:", data);
-
       if (response.ok) {
-        setMessage("Visitor added successfully!");
-
-        setFormData({
-          name: "",
-          age: "",
-          country: "",
-          travelType: "",
-          budget: "",
-          destination: "",
-        });
+        setMessage({ text: "Visitor added successfully!", error: false });
+        setFormData(EMPTY_FORM);
+        onCreated?.();
       } else {
-        setMessage(data.message || "Failed to create visitor");
+        setMessage({
+          text: data.message || "Failed to create visitor.",
+          error: true,
+        });
       }
     } catch (error) {
-      console.error(error);
-      setMessage("Unable to connect to the server");
+      setMessage({ text: "Unable to connect to the server.", error: true });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
+    <div className="form-card">
       <h2>Add Visitor</h2>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
+      <form className="form-grid" onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="name">Name</label>
+          <input
+            id="name"
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <input
-          type="number"
-          name="age"
-          placeholder="Age"
-          value={formData.age}
-          onChange={handleChange}
-          required
-        />
+        <div>
+          <label htmlFor="age">Age</label>
+          <input
+            id="age"
+            type="number"
+            name="age"
+            min="0"
+            max="120"
+            step="1"
+            value={formData.age}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <input
-          type="text"
-          name="country"
-          placeholder="Country"
-          value={formData.country}
-          onChange={handleChange}
-          required
-        />
+        <div>
+          <label htmlFor="country">Country</label>
+          <input
+            id="country"
+            type="text"
+            name="country"
+            value={formData.country}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <input
-          type="text"
-          name="travelType"
-          placeholder="Travel Type"
-          value={formData.travelType}
-          onChange={handleChange}
-          required
-        />
+        <div>
+          <label htmlFor="travelType">Travel type</label>
+          <select
+            id="travelType"
+            name="travelType"
+            value={formData.travelType}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select travel type</option>
+            {TRAVEL_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        <input
-          type="number"
-          name="budget"
-          placeholder="Budget"
-          value={formData.budget}
-          onChange={handleChange}
-          required
-        />
+        <div>
+          <label htmlFor="budget">Budget</label>
+          <input
+            id="budget"
+            type="number"
+            name="budget"
+            min="0"
+            step="any"
+            value={formData.budget}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <select
-          name="destination"
-          value={formData.destination}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select Destination</option>
-
-          {destinations.map((destination) => (
-            <option
-              key={destination._id}
-              value={destination._id}
-            >
-              {destination.name}
+        <div>
+          <label htmlFor="destination">Destination</label>
+          <select
+            id="destination"
+            name="destination"
+            value={formData.destination}
+            onChange={handleChange}
+            required
+            disabled={destStatus !== "ready"}
+          >
+            <option value="">
+              {destStatus === "loading" && "Loading destinations..."}
+              {destStatus === "error" && "Could not load destinations"}
+              {destStatus === "ready" && "Select destination"}
             </option>
-          ))}
-        </select>
+            {destinations.map((d) => (
+              <option key={d._id} value={d._id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        <br />
-        <br />
-
-        <button type="submit">
-          Add Visitor
+        <button type="submit" disabled={loading || destStatus !== "ready"}>
+          {loading ? "Adding..." : "Add Visitor"}
         </button>
       </form>
 
-      {message && <p>{message}</p>}
+      {message.text && (
+        <p role={message.error ? "alert" : "status"}>{message.text}</p>
+      )}
     </div>
   );
 }

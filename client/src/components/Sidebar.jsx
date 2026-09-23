@@ -1,31 +1,29 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import { useAuth } from "../AuthContext";
+import { NAV_LINKS } from "../navLinks";
 
 function Sidebar() {
+  const { token } = useAuth();
+
+  const links = token
+    ? NAV_LINKS
+    : NAV_LINKS.filter((link) => link.to === "/");
+
   return (
-    <div
-      style={{
-        width: "200px",
-        minHeight: "100vh",
-        background: "#f3f4f6",
-        padding: "20px",
-      }}
-    >
-      <h3>Menu</h3>
-
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        <li>
-          <Link to="/">Dashboard</Link>
-        </li>
-
-        <li>
-          <Link to="/visitors">Visitors</Link>
-        </li>
-
-        <li>
-          <Link to="/destinations">Destinations</Link>
-        </li>
-      </ul>
-    </div>
+    <aside className="sidebar">
+      <nav aria-label="Sidebar">
+        <h3 className="sidebar-title">Menu</h3>
+        <ul className="sidebar-links">
+          {links.map(({ to, label, end }) => (
+            <li key={to}>
+              <NavLink to={to} end={end}>
+                {label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
   );
 }
 

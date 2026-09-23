@@ -1,214 +1,248 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
+import { CATEGORIES } from "../constants";
 
-function DestinationList() {
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const EMPTY_FORM = { name: "", location: "", category: "", description: "" };
+
+function DestinationList({ refreshKey }) {
   const [destinations, setDestinations] = useState([]);
+  const [status, setStatus] = useState("loading"); // loading | ready | error
+  const [message, setMessage] = useState({ text: "", error: false });
   const [editingId, setEditingId] = useState(null);
-
-  const [editData, setEditData] = useState({
-    name: "",
-    location: "",
-    category: "",
-    description: "",
-  });
-
-  // Get all destinations
-  const fetchDestinations = async () => {
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/destinations"
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setDestinations(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch destinations:", error);
-    }
-  };
+  const [editData, setEditData] = useState(EMPTY_FORM);
+  const { token, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchDestinations();
-  }, []);
+    const controller = new AbortController();
 
-  // Start editing
-  const handleEdit = (destination) => {
-    setEditingId(destination._id);
+    const load = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/destinations`, {
+          signal: controller.signal,
+        });
+        const data = await response.json().catch(() => null);
 
-    setEditData({
-      name: destination.name,
-      location: destination.location,
-      category: destination.category,
-      description: destination.description,
-    });
-  };
-
-  // Handle input changes
-  const handleChange = (event) => {
-    setEditData({
-      ...editData,
-      [event.target.name]: event.target.value,
-    });
-  };
-
-  // Update destination
-  const handleUpdate = async (id) => {
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api/destinations/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(editData),
+        if (response.ok && Array.isArray(data)) {
+          setDestinations(data);
+          setStatus("ready");
+        } else {
+          setStatus("error");
         }
-      );
+      } catch (error) {
+        if (error.name !== "AbortError") setStatus("error");
+      }
+    };
 
-      const data = await response.json();
+    load();
+    return () => controller.abort();
+  }, [refreshKey]);
+
+  const authHeaders = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+
+  const handleEdit = (d) => {
+    setEditingId(d._id);
+    setEditData({
+      name: d.name,
+      location: d.location,
+      category: d.category,
+      description: d.description,
+    });
+    setMessage({ text: "", error: false });
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEditData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdate = async (e, id) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch(`${API_URL}/api/destinations/${id}`, {
+        method: "PUT",
+        headers: authHeaders,
+        body: JSON.stringify(editData),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (response.status === 401) {
+        logout();
+        navigate("/login");
+        return;
+      }
 
       if (response.ok) {
-        alert("Destination updated successfully!");
-
+        // Use the server's document if it returns one, otherwise merge locally
+        setDestinations((prev) =>
+          prev.map((d) =>
+            d._id === id ? (data && data._id ? data : { ...d, ...editData }) : d
+          )
+        );
         setEditingId(null);
-
-        fetchDestinations();
+        setMessage({ text: "Destination updated.", error: false });
       } else {
-        alert(data.message || "Failed to update destination");
+        setMessage({
+          text: data.message || "Failed to update destination.",
+          error: true,
+        });
       }
     } catch (error) {
-      console.error("Update error:", error);
-      alert("Unable to connect to server");
+      setMessage({ text: "Unable to connect to the server.", error: true });
     }
   };
 
-  // Delete destination
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this destination?"
-    );
-
-    if (!confirmDelete) {
+    if (!window.confirm("Are you sure you want to delete this destination?")) {
       return;
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/destinations/${id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`${API_URL}/api/destinations/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json().catch(() => ({}));
 
-      const data = await response.json();
+      if (response.status === 401) {
+        logout();
+        navigate("/login");
+        return;
+      }
 
       if (response.ok) {
-        alert("Destination deleted successfully!");
-
-        fetchDestinations();
+        setDestinations((prev) => prev.filter((d) => d._id !== id));
+        setMessage({ text: "Destination deleted.", error: false });
       } else {
-        alert(data.message || "Failed to delete destination");
+        setMessage({
+          text: data.message || "Failed to delete destination.",
+          error: true,
+        });
       }
     } catch (error) {
-      console.error("Delete error:", error);
-      alert("Unable to connect to server");
+      setMessage({ text: "Unable to connect to the server.", error: true });
     }
   };
 
   return (
     <div>
-      <h2>Destinations</h2>
+      <h2>All destinations</h2>
 
-      {destinations.length === 0 ? (
+      {message.text && (
+        <p role={message.error ? "alert" : "status"}>{message.text}</p>
+      )}
+
+      {status === "loading" && <p>Loading destinations...</p>}
+      {status === "error" && (
+        <p role="alert">Could not load destinations.</p>
+      )}
+      {status === "ready" && destinations.length === 0 && (
         <p>No destinations available.</p>
-      ) : (
-        destinations.map((destination) => (
-          <div key={destination._id}>
-            {editingId === destination._id ? (
-              <div>
-                <h3>Edit Destination</h3>
+      )}
 
-                <input
-                  type="text"
-                  name="name"
-                  value={editData.name}
-                  onChange={handleChange}
-                  placeholder="Destination name"
-                />
+      <div className="card-grid">
+        {destinations.map((d) =>
+          editingId === d._id ? (
+            <form
+              key={d._id}
+              className="card"
+              onSubmit={(e) => handleUpdate(e, d._id)}
+            >
+              <h3>Edit destination</h3>
 
-                <input
-                  type="text"
-                  name="location"
-                  value={editData.location}
-                  onChange={handleChange}
-                  placeholder="Location"
-                />
+              <input
+                type="text"
+                name="name"
+                aria-label="Destination name"
+                value={editData.name}
+                onChange={handleChange}
+                required
+              />
 
-                <input
-                  type="text"
-                  name="category"
-                  value={editData.category}
-                  onChange={handleChange}
-                  placeholder="Category"
-                />
+              <input
+                type="text"
+                name="location"
+                aria-label="Location"
+                value={editData.location}
+                onChange={handleChange}
+                required
+              />
 
-                <textarea
-                  name="description"
-                  value={editData.description}
-                  onChange={handleChange}
-                  placeholder="Description"
-                />
+              <select
+                name="category"
+                aria-label="Category"
+                value={editData.category}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select a category</option>
+                {editData.category && !CATEGORIES.includes(editData.category) && (
+                  <option value={editData.category}>{editData.category}</option>
+                )}
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
 
+              <textarea
+                name="description"
+                aria-label="Description"
+                value={editData.description}
+                onChange={handleChange}
+                required
+              />
+
+              <div className="actions">
+                <button type="submit">Save changes</button>
                 <button
-                  onClick={() => handleUpdate(destination._id)}
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setEditingId(null)}
                 >
-                  Save Changes
-                </button>
-
-                <button onClick={() => setEditingId(null)}>
                   Cancel
                 </button>
               </div>
-            ) : (
-              <div>
-                <h3>{destination.name}</h3>
+            </form>
+          ) : (
+            <div key={d._id} className="card">
+              <h3>{d.name}</h3>
+              <span className="badge">{d.category}</span>
+              <p>
+                <strong>Location:</strong> {d.location}
+              </p>
+              <p>{d.description}</p>
 
-                <p>
-                  <strong>Location:</strong>{" "}
-                  {destination.location}
-                </p>
-
-                <p>
-                  <strong>Category:</strong>{" "}
-                  {destination.category}
-                </p>
-
-                <p>
-                  <strong>Description:</strong>{" "}
-                  {destination.description}
-                </p>
-
-                <button
-                  onClick={() => handleEdit(destination)}
-                >
-                  Edit
-                </button>
-
-                <button
-                  onClick={() =>
-                    handleDelete(destination._id)
-                  }
-                >
-                  Delete
-                </button>
-
-                <hr />
-              </div>
-            )}
-          </div>
-        ))
-      )}
+              {token && (
+                <div className="actions">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => handleEdit(d)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-danger"
+                    onClick={() => handleDelete(d._id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          )
+        )}
+      </div>
     </div>
   );
 }
