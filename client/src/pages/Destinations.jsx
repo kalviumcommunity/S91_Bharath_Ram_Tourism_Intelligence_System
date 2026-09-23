@@ -1,6 +1,7 @@
 import { useState } from "react";
 import DestinationForm from "../components/DestinationForm";
 import DestinationList from "../components/DestinationList";
+import FileUpload from "../components/FileUpload";
 import { useAuth } from "../AuthContext";
 
 function Destinations() {
@@ -12,7 +13,13 @@ function Destinations() {
       <h1>Destinations</h1>
 
       {token && (
-        <DestinationForm onCreated={() => setRefreshKey((k) => k + 1)} />
+        <>
+          <DestinationForm
+            onCreated={() => setRefreshKey((k) => k + 1)}
+          />
+
+          <FileUpload />
+        </>
       )}
 
       <DestinationList refreshKey={refreshKey} />
