@@ -122,6 +122,7 @@ require("dotenv").config();
 const visitorRoutes = require("./routes/visitorRoutes");
 const destinationRoutes = require("./routes/destinationRoutes");
 const authRoutes = require("./routes/authRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 const app = express();
 
@@ -146,6 +147,9 @@ app.get("/", (req, res) => {
 app.use("/api/visitors", visitorRoutes);
 app.use("/api/destinations", destinationRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/upload", uploadRoutes);
+
+app.use("/uploads", express.static("uploads"));
 
 const PORT = process.env.PORT || 5000;
 
