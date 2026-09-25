@@ -141,6 +141,8 @@ mongoose
 app.get("/", (req, res) => {
   res.json({
     message: "Tourism Intelligence API is running",
+    status: "deployed",
+    version: "1.0.0"
   });
 });
 
