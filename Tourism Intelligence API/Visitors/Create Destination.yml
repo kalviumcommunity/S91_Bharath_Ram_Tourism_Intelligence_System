@@ -6,6 +6,15 @@ info:
 http:
   method: POST
   url: "{{baseUrl}}/api/destinations"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Marina Beach",
+        "location": "Chennai",
+        "category": "Beach",
+        "description": "Popular tourist destination in Chennai"
+      }
   auth: inherit
 
 settings:

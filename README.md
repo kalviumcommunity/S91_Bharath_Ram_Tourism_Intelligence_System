@@ -31,4 +31,3 @@ The **Tourism Intelligence System** is an AI-powered web application designed to
 
 * Train and integrate a machine learning model for trend prediction.
 * Enhance the user interface.
-* Test the application, fix bugs, and deploy the project.

@@ -5,8 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/api/visitors/VISITOR_ID"
-  auth: inherit
+  url: "{{baseUrl}}/api/visitors/6a8c617377c47536afff47e6"
+  auth:
+    type: bearer
+    token: "{{token}}"
 
 settings:
   encodeUrl: true

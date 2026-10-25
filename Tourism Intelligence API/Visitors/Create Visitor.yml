@@ -6,7 +6,20 @@ info:
 http:
   method: POST
   url: "{{baseUrl}}/api/visitors"
-  auth: inherit
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Bruno Tourist",
+        "age": 25,
+        "country": "India",
+        "travelType": "Leisure",
+        "budget": 15000,
+        "destination": "6a9e531ccc31ff935677dba9"
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
 
 settings:
   encodeUrl: true

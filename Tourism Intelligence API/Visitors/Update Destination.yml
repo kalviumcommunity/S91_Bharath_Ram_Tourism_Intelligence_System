@@ -5,7 +5,16 @@ info:
 
 http:
   method: PUT
-  url: "{{baseUrl}}/api/destinations/"
+  url: "{{baseUrl}}/api/destinations/6ab5311394ea3e579e683e07"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Marina Beach",
+        "location": "Chennai",
+        "category": "Beach",
+        "description": "Updated description"
+      }
   auth: inherit
 
 settings:
