@@ -33,29 +33,63 @@ The **Tourism Intelligence System** is an AI-powered web application designed to
 * Enhance the user interface.
 
 
+## Frontend Deployment
 
-## Live Deployment
+### Live Application
 
-The Tourism Intelligence System frontend is deployed on Netlify.
-
-- **Live Frontend:** https://tourism-intelligence-system.netlify.app
+- **Public Frontend:** https://tourism-intelligence-system.netlify.app
 - **Backend API:** https://s91-bharath-ram-tourism-intelligence.onrender.com
+- **Frontend Hosting:** Netlify
+- **Backend Hosting:** Render
 
-### Deployment Configuration
+### Frontend Build Process
 
-- **Frontend hosting:** Netlify
-- **Backend hosting:** Render
-- **Frontend framework:** React with Vite
-- **Backend:** Node.js and Express
-- **Database:** MongoDB
+The frontend is built using React and Vite.
 
-The frontend uses the `VITE_API_URL` environment variable to communicate with the deployed backend. Google sign-in uses the `VITE_GOOGLE_CLIENT_ID` environment variable.
+1. Navigate to the frontend directory:
 
-Environment variables are configured in the respective hosting dashboards. Secret values are not committed to the repository.
+   ```bash
+   cd client
+   ```
 
-### Features Verified
+2. Install the dependencies:
 
-- Google authentication
-- Manual login and registration
-- Tourism visitor management
-- Destination management
+   ```bash
+   npm install
+   ```
+
+3. Build the production application:
+
+   ```bash
+   npm run build
+   ```
+
+4. Vite generates the production build in the `client/dist` directory.
+
+5. Netlify deploys the frontend build. The build command is `npm run build`, and the publish directory is `client/dist` when the Netlify base directory is the repository root. If the Netlify base directory is set to `client`, the publish directory should be `dist`.
+
+### Environment Configuration
+
+The frontend uses the following environment variables:
+
+- `VITE_API_URL` — URL of the deployed backend API.
+- `VITE_GOOGLE_CLIENT_ID` — Google OAuth client ID used for Google sign-in.
+
+These variables are configured in Netlify's environment variable settings. Secret credentials must not be committed to GitHub.
+
+### Feature Verification
+
+Record the actual result of each test before marking it as passed.
+
+| Feature | Test to perform | Result |
+|---|---|---|
+| Public frontend | Open the Netlify URL | Pending verification |
+| Google authentication | Sign in and confirm the expected authenticated state | Pending verification |
+| Manual login | Log in with a valid test account | Pending verification |
+| Visitor management | Create or retrieve a visitor and confirm the result | Pending verification |
+| Destination management | Open destinations and test the relevant API operation | Pending verification |
+| Backend connectivity | Confirm API requests succeed in browser DevTools | Pending verification |
+
+Update each result after testing the deployed application. Include any failures or limitations honestly.
+
+
