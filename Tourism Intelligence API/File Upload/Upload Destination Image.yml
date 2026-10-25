@@ -6,7 +6,17 @@ info:
 http:
   method: POST
   url: "{{baseUrl}}/api/upload"
-  auth: inherit
+  body:
+    type: multipart-form
+    data:
+      - name: file
+        type: file
+        value:
+          - C:\Users\iyapp\Downloads\des.webp
+        contentType: image/webp
+  auth:
+    type: bearer
+    token: "{{token}}"
 
 settings:
   encodeUrl: true
