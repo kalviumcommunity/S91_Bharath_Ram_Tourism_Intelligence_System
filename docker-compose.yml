@@ -1,0 +1,21 @@
+services:
+  backend:
+    build:
+      context: ./server
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./client
+      args:
+        VITE_API_URL: https://s91-bharath-ram-tourism-intelligence.onrender.com
+        VITE_GOOGLE_CLIENT_ID: 326109312828-j7vmi7o8t2qbn8msmqlaim3an4s2atuv.apps.googleusercontent.com
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
