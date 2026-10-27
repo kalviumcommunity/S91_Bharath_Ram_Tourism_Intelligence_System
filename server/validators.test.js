@@ -9,7 +9,7 @@ const {
 
 describe("Tourism application validators", () => {
   test("accepts a valid visitor name", () => {
-    expect(isValidVisitorName("Bharath")).toBe(true);
+    expect(isValidVisitorName("John")).toBe(true);
   });
 
   test("rejects an empty visitor name", () => {
@@ -39,4 +39,40 @@ describe("Tourism application validators", () => {
   test("rejects a destination name that is too short", () => {
     expect(isValidDestinationName("A")).toBe(false);
   });
+
+  test("rejects an age below 1", () => {
+  expect(isValidAge(0)).toBe(false);
+});
+
+test("accepts the minimum valid age", () => {
+  expect(isValidAge(1)).toBe(true);
+});
+
+test("accepts the maximum valid age", () => {
+  expect(isValidAge(120)).toBe(true);
+});
+
+test("rejects a negative budget", () => {
+  expect(isValidBudget(-100)).toBe(false);
+});
+
+test("rejects an invalid budget string", () => {
+  expect(isValidBudget("abc")).toBe(false);
+});
+
+test("rejects an empty budget", () => {
+  expect(isValidBudget("")).toBe(false);
+});
+
+test("rejects a non-string visitor name", () => {
+  expect(isValidVisitorName(123)).toBe(false);
+});
+
+test("rejects a non-string travel type", () => {
+  expect(isValidTravelType(123)).toBe(false);
+});
+
+test("rejects an empty destination name", () => {
+  expect(isValidDestinationName("")).toBe(false);
+});
 });

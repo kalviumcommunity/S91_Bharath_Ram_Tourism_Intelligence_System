@@ -12,12 +12,84 @@ function DestinationForm({ onCreated }) {
   const [message, setMessage] = useState({ text: "", error: false });
   const [loading, setLoading] = useState(false);
   const { token, logout } = useAuth();
+  const [aiLoading, setAiLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+const handleGenerateDescription = async () => {
+  setMessage({ text: "", error: false });
+
+  if (
+    !formData.name.trim() ||
+    !formData.location.trim() ||
+    !formData.category
+  ) {
+    setMessage({
+      text: "Enter the destination name, location, and category first.",
+      error: true,
+    });
+    return;
+  }
+
+  setAiLoading(true);
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/ai/destination-description`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          location: formData.location,
+          category: formData.category,
+        }),
+      }
+    );
+
+const contentType = response.headers.get("content-type") || "";
+
+if (!contentType.includes("application/json")) {
+  const responseText = await response.text();
+
+  console.error("Expected JSON but received:", responseText.slice(0, 300));
+
+  throw new Error(
+    "The server returned HTML instead of JSON. Check your backend URL and Render deployment."
+  );
+}
+
+const data = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Unable to generate a description."
+      );
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      description: data.description,
+    }));
+
+    setMessage({
+      text: "Description generated successfully!",
+      error: false,
+    });
+  } catch (error) {
+    setMessage({
+      text: error.message || "Unable to connect to the AI service.",
+      error: true,
+    });
+  } finally {
+    setAiLoading(false);
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -106,16 +178,25 @@ function DestinationForm({ onCreated }) {
           </select>
         </div>
 
-        <div>
-          <label htmlFor="dest-description">Description</label>
-          <textarea
-            id="dest-description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            required
-          />
-        </div>
+<div>
+  <label htmlFor="dest-description">Description</label>
+
+  <button
+    type="button"
+    onClick={handleGenerateDescription}
+    disabled={aiLoading || loading}
+  >
+    {aiLoading ? "Generating..." : "✨ Generate with AI"}
+  </button>
+
+  <textarea
+    id="dest-description"
+    name="description"
+    value={formData.description}
+    onChange={handleChange}
+    required
+  />
+</div>
 
         <button type="submit" disabled={loading}>
           {loading ? "Adding..." : "Add Destination"}

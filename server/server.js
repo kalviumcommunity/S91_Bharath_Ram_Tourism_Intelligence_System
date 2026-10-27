@@ -124,11 +124,16 @@ const visitorRoutes = require("./routes/visitorRoutes");
 const destinationRoutes = require("./routes/destinationRoutes");
 const authRoutes = require("./routes/authRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 
 const app = express();
 
+
+
 app.use(cors());
 app.use(express.json());
+
+
 
 app.get("/", (req, res) => {
   res.json({
@@ -138,14 +143,34 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/debug", (req, res) => {
+  res.json({
+    message: "Correct server.js is running"
+  });
+});
+
+app.post("/api/ai/test", (req, res) => {
+  res.json({
+    message: "AI test route works"
+  });
+});
+
+app.get("/api/ai/health", (req, res) => {
+  res.json({ message: "AI routes are deployed" });
+});
+
 app.use("/api/visitors", visitorRoutes);
 app.use("/api/destinations", destinationRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/ai", aiRoutes);
+
+
+
 
 app.use("/uploads", express.static("uploads"));
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 async function startServer() {
   try {
