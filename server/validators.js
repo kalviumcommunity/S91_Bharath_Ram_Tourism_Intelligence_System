@@ -10,7 +10,17 @@ function isValidAge(age) {
 }
 
 function isValidBudget(budget) {
-  return Number.isFinite(Number(budget)) && Number(budget) >= 0;
+  if (
+    typeof budget === "string" &&
+    budget.trim() === ""
+  ) {
+    return false;
+  }
+
+  return (
+    Number.isFinite(Number(budget)) &&
+    Number(budget) >= 0
+  );
 }
 
 function isValidTravelType(type) {

@@ -1,0 +1,24 @@
+info:
+  name: "test "
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: http://localhost:5001/api/ai/destination-description
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Marina Beach",
+        "location": "Chennai, Tamil Nadu",
+        "category": "Beach"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

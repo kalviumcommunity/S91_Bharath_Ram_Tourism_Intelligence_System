@@ -93,3 +93,41 @@ Record the actual result of each test before marking it as passed.
 Update each result after testing the deployed application. Include any failures or limitations honestly.
 
 
+## Docker Setup
+
+### Architecture
+
+The Tourism Intelligence System consists of a React/Vite frontend, an Express backend, and a MongoDB Atlas database.
+
+Docker Compose builds and starts the frontend and backend services.
+
+### Run locally
+
+1. Install and start Docker Desktop.
+2. Configure the backend environment in `server/.env`.
+3. Configure `VITE_GOOGLE_CLIENT_ID` in the project-root `.env`.
+4. Build and start the services:
+
+   ```bash
+   docker compose up -d --build
+   ```
+
+5. Open the frontend at `http://localhost:8080`.
+
+### API configuration
+
+In the local Compose build, the frontend uses `http://localhost:5000` for browser-side API requests. Docker maps this host port to the backend container's port 5000.
+
+The frontend uses the Render backend URL in the deployed Netlify environment. Configure the appropriate `VITE_API_URL` at build time for each environment.
+
+### Useful commands
+
+```bash
+docker compose ps
+docker compose logs -f
+docker compose down
+```
+
+### Database
+
+The backend connects to MongoDB Atlas using its server-side environment configuration. Database credentials must not be committed to the repository.
