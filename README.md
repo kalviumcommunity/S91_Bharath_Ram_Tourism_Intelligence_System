@@ -131,3 +131,34 @@ docker compose down
 ### Database
 
 The backend connects to MongoDB Atlas using its server-side environment configuration. Database credentials must not be committed to the repository.
+
+
+Mock UX Design
+
+Figma Design Link: https://www.figma.com/design/SaNlljK6TBKzupqYKq6cnf/Tourism-Intelligence-System--Mock-UX?node-id=0-1&t=gdYEIZ0DgxHT0bCD-1
+
+The Mock UX Design for the Tourism Intelligence System demonstrates the application's user interface, navigation, and key user journeys. It includes dashboard analytics, visitor management, destination management, AI-powered destination description generation, reports and insights, and user settings.
+
+The design focuses on a clean, intuitive, and responsive dashboard experience to help tourism departments manage visitor information, explore destinations, and gain insights into tourism trends.
+
+Key Screens:
+
+Login
+
+Dashboard
+
+Visitors Management
+
+Add/Edit Visitor
+
+Destinations Management
+
+Add/Edit Destination
+
+AI Destination Description Generator
+
+Reports & Insights
+
+Settings/Profile
+
+This mock UX serves as a visual blueprint for the application's frontend development.
